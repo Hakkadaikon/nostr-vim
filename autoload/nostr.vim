@@ -3,59 +3,76 @@
 " Description : 
 " Author      : hakkadaikon
 "--------------------------------
-function! s:get_timelinestr_algia(limit) abort
-    let l:text = "algia tl -n " . printf("%s", a:limit) . " --json"
-    return system(l:text)
+function! s:showTimeLineAlgia() abort
+    return jobstart(['algia', 'stream'], { 'on_stdout': function('s:jobCallback') })
 endfunction
 
-function! s:get_timelinestr(limit) abort
-    return s:get_timelinestr_algia(a:limit)
+function! s:showTimeLine() abort
+    return s:showTimeLineAlgia()
 endfunction
 
-function! s:get_timeline(limit) abort
-    let l:result = s:get_timelinestr(a:limit)
-
-    let l:timelineStrs = split(l:result, "\n")
+function! s:jobCallback(id, data, event) abort
+    let l:timelineStrs = split(join(a:data), "\n")
 
     let l:str = ""
     for l:timelineStr in l:timelineStrs
-        let l:timelineJson = json_decode(l:timelineStr)
+        let l:timelineJson = ""
+        try
+            let l:timelineJson = json_decode(l:timelineStr)
+        catch
+            continue
+        endtry
         let l:id           = l:timelineJson["id"]
         let l:content      = l:timelineJson["content"]
         let l:pubkey       = l:timelineJson["pubkey"]
         let l:created_at   = l:timelineJson["created_at"]
         let l:content      = substitute(l:content, "\n", " ", "g")
 
-        let l:str = l:str . printf("%s\n%s\n\n", l:id, l:content)
+        let l:str = l:str . printf("%s %s", l:pubkey, l:content)
     endfor
 
-    return str
+    let l:winid = bufwinid('__Nostr_TL__')
+    if l:winid ==# -1
+      silent noautocmd split __Nostr_TL__
+      setlocal buftype=nofile bufhidden=wipe noswapfile
+      setlocal wrap nonumber signcolumn=no filetype=markdown
+      wincmd p
+      let l:winid = bufwinid('__Nostr_TL__')
+    endif
+
+    call win_execute(l:winid, 'setlocal modifiable', 1)
+    call win_execute(l:winid, 'normal! G', 1)
+    call win_execute(l:winid, 'call append(line("$"), l:str)', 1)
+    call win_execute(l:winid, 'setlocal nomodifiable nomodified', 1)
 endfunction
 
-function! s:showTimeLine(limit) abort
-    let l:timeline = s:get_timeline(a:limit)
-    echo l:timeline
-endfunction
-
-function! s:popupTimeLine(limit) abort
+function! s:popupTimeLine() abort
     " TODO: not implemented yet
-    let l:text   = s:get_timeline(a:limit)
-    let win_id = popup_create(
-    \ l:text, 
-    \ { 
-    \     'pos'      : 'center',
-    \     'minwidth' : 1,
-    \     'zindex'   : 200,
-    \     'time'     : 3000
-    \ }
-    \ )
-    call win_execute(win_id, 'syntax enable')
+    " let l:text   = s:get_timeline(a:limit)
+    " let win_id = popup_create(
+    " \ l:text, 
+    " \ { 
+    " \     'pos'      : 'center',
+    " \     'minwidth' : 1,
+    " \     'zindex'   : 200,
+    " \     'time'     : 3000
+    " \ }
+    " \ )
+    " call win_execute(win_id, 'syntax enable')
 endfunction
 
-function! nostr#showTimeLine(limit) abort
-    call s:showTimeLine(a:limit)
+function! s:post(str) abort
+    call system('algia post ' . a:str)
 endfunction
 
-function! nostr#popupTimeLine(limit) abort
-    call s:popupTimeLine(a:limit)
+function! nostr#showTimeLine() abort
+    let l:ch = s:showTimeLine()
+endfunction
+
+function! nostr#post(str) abort
+    call s:post(a:str)
+endfunction
+
+function! nostr#popupTimeLine() abort
+    call s:popupTimeLine()
 endfunction
