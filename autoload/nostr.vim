@@ -11,6 +11,11 @@ function! s:showTimeLine() abort
     return s:showTimeLineAlgia()
 endfunction
 
+function! s:getFollowings() abort
+    let l:filepath = expand('~/.config/algia/config.json')
+    return json_decode(readfile(l:filepath))
+endfunction
+
 function! s:jobCallback(id, data, event) abort
     let l:timelineStrs = split(join(a:data), "\n")
 
@@ -22,13 +27,21 @@ function! s:jobCallback(id, data, event) abort
         catch
             continue
         endtry
+
         let l:id           = l:timelineJson["id"]
         let l:content      = l:timelineJson["content"]
         let l:pubkey       = l:timelineJson["pubkey"]
         let l:created_at   = l:timelineJson["created_at"]
         let l:content      = substitute(l:content, "\n", " ", "g")
 
-        let l:str = l:str . printf("%s %s", l:pubkey, l:content)
+        try
+            let l:target = g:following["follows"][l:pubkey]
+            let l:display_name = l:target["display_name"]
+            let l:str = l:str . printf("[%s] %s", l:display_name, l:content)
+        catch
+            let l:str = l:str . printf("[%s] %s", l:pubkey, l:content)
+        endtry
+
     endfor
 
     let l:winid = bufwinid('__Nostr_TL__')
@@ -66,7 +79,8 @@ function! s:post(str) abort
 endfunction
 
 function! nostr#showTimeLine() abort
-    let l:ch = s:showTimeLine()
+    let g:following = s:getFollowings()
+    let g:ch = s:showTimeLine()
 endfunction
 
 function! nostr#post(str) abort
