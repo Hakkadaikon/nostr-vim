@@ -71,7 +71,7 @@ endfunction
 
 function! s:close() abort
     call jobstop(s:ch)
-    call win_execute(s:winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", s:winid))
+    "call win_execute(s:winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", s:winid))
 endfunction
 
 function! s:popupTimeLine() abort
