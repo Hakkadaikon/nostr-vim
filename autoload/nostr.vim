@@ -32,21 +32,44 @@ function! s:jobCallback(id, data, event) abort
         let l:kind       = l:timelineJson["kind"]
         let l:sig        = l:timelineJson["sig"]
         let l:content    = l:timelineJson["content"]
+        let l:time       = strftime("%Y/%m/%d %H:%M:%S", l:created_at)
 
-        let l:time = strftime("%Y/%m/%d %H:%M:%S", l:created_at)
+        " profile
+        let l:valid_profile = 1
+        let l:valid_nip05   = 0
+        try
+            let l:profile       = s:follows["follows"][l:pubkey]
+            let l:website       = l:profile["website"]
+            let l:picture       = l:profile["picture"]
+            let l:display_name  = l:profile["display_name"]
+            let l:name          = l:profile["name"]
+            let l:about         = l:profile["about"]
+            let l:nip05         = l:profile["nip05"]
+            let l:lud16         = l:profile["lud16"]
+            if nip05 !=# ""
+                "TODO: check nip05
+                let l:valid_nip05 = 1
+            endif
+        catch
+            let l:valid_profile = 0
+        endtry
+
+        let l:profile_line = printf("[%s] ", l:pubkey)
+        if l:valid_profile ==# 1
+            let l:profile_line = printf("[%s/@%s] ", l:display_name, l:name)
+            if l:valid_nip05 ==# 1
+                let l:profile_line = printf("✓👤%s", l:profile_line)
+            endif
+        endif
+
+        let l:profile_line = printf("%s %s", l:profile_line, l:time)
 
         if l:kind ==# 1
-            let l:contents = split(l:content, "\n")
-            try
-                let l:target       = s:follows["follows"][l:pubkey]
-                let l:display_name = l:target["display_name"]
-                let l:name         = l:target["name"]
-                call add(l:list, printf("[%s / @%s] %s", l:display_name, l:name, l:time))
-            catch
-                call add(l:list, printf("[%s] %s", l:pubkey, l:time))
-            endtry
-
+            call add(l:list, profile_line)
             call add(l:list, "")
+
+            " show note
+            let l:contents = split(l:content, "\n")
             for l:item in l:contents
                 call add(l:list, l:item)
             endfor
