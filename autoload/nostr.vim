@@ -17,10 +17,8 @@ function! s:getFollowings() abort
 endfunction
 
 function! s:jobCallback(id, data, event) abort
-    let l:timelineStrs = split(join(a:data), "\n")
-
-    let l:str = ""
-    for l:timelineStr in l:timelineStrs
+    let l:list = []
+    for l:timelineStr in a:data
         let l:timelineJson = ""
         try
             let l:timelineJson = json_decode(l:timelineStr)
@@ -28,35 +26,52 @@ function! s:jobCallback(id, data, event) abort
             continue
         endtry
 
-        let l:id           = l:timelineJson["id"]
-        let l:content      = l:timelineJson["content"]
-        let l:pubkey       = l:timelineJson["pubkey"]
-        let l:created_at   = l:timelineJson["created_at"]
-        let l:content      = substitute(l:content, "\n", " ", "g")
+        let l:id         = l:timelineJson["id"]
+        let l:pubkey     = l:timelineJson["pubkey"]
+        let l:created_at = l:timelineJson["created_at"]
+        let l:kind       = l:timelineJson["kind"]
+        let l:sig        = l:timelineJson["sig"]
+        let l:content    = l:timelineJson["content"]
 
-        try
-            let l:target = g:following["follows"][l:pubkey]
-            let l:display_name = l:target["display_name"]
-            let l:str = l:str . printf("[%s] %s", l:display_name, l:content)
-        catch
-            let l:str = l:str . printf("[%s] %s", l:pubkey, l:content)
-        endtry
+        let l:time = strftime("%Y/%m/%d %H:%M:%S", l:created_at)
 
+        if l:kind ==# 1
+            let l:contents = split(l:content, "\n")
+            try
+                let l:target       = s:follows["follows"][l:pubkey]
+                let l:display_name = l:target["display_name"]
+                let l:name         = l:target["name"]
+                call add(l:list, printf("[%s / @%s] %s", l:display_name, l:name, l:time))
+            catch
+                call add(l:list, printf("[%s] %s", l:pubkey, l:time))
+            endtry
+
+            call add(l:list, "")
+            for l:item in l:contents
+                call add(l:list, l:item)
+            endfor
+            call add(l:list, "--------------------------------")
+        endif
     endfor
 
-    let l:winid = bufwinid('__Nostr_TL__')
-    if l:winid ==# -1
+    let s:winid = bufwinid('__Nostr_TL__')
+    if s:winid ==# -1
       silent noautocmd split __Nostr_TL__
       setlocal buftype=nofile bufhidden=wipe noswapfile
       setlocal wrap nonumber signcolumn=no filetype=markdown
       wincmd p
-      let l:winid = bufwinid('__Nostr_TL__')
+      let s:winid = bufwinid('__Nostr_TL__')
     endif
 
-    call win_execute(l:winid, 'setlocal modifiable', 1)
-    call win_execute(l:winid, 'normal! G', 1)
-    call win_execute(l:winid, 'call append(line("$"), l:str)', 1)
-    call win_execute(l:winid, 'setlocal nomodifiable nomodified', 1)
+    call win_execute(s:winid, 'setlocal modifiable', 1)
+    call win_execute(s:winid, 'normal! G', 1)
+    call win_execute(s:winid, 'call append(line("$"), l:list)', 1)
+    call win_execute(s:winid, 'setlocal nomodifiable nomodified', 1)
+endfunction
+
+function! s:close() abort
+    call jobstop(s:ch)
+    call win_execute(s:winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", s:winid))
 endfunction
 
 function! s:popupTimeLine() abort
@@ -78,15 +93,19 @@ function! s:post(str) abort
     call system('algia post ' . a:str)
 endfunction
 
-function! nostr#showTimeLine() abort
-    let g:following = s:getFollowings()
-    let g:ch = s:showTimeLine()
+function! nostr#show() abort
+    let s:follows = s:getFollowings()
+    let s:ch      = s:showTimeLine()
+endfunction
+
+function! nostr#close() abort
+    call s:close()
 endfunction
 
 function! nostr#post(str) abort
     call s:post(a:str)
 endfunction
 
-function! nostr#popupTimeLine() abort
+function! nostr#popup() abort
     call s:popupTimeLine()
 endfunction
