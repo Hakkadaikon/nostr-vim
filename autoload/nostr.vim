@@ -11,7 +11,7 @@ function! s:showTimeLine() abort
     return s:showTimeLineAlgia()
 endfunction
 
-function! s:getFollowings() abort
+function! s:getFollows() abort
     let l:filepath = expand('~/.config/algia/config.json')
     return json_decode(readfile(l:filepath))
 endfunction
@@ -117,7 +117,7 @@ function! s:post(str) abort
 endfunction
 
 function! nostr#show() abort
-    let s:follows = s:getFollowings()
+    let s:follows = s:getFollows()
     let s:ch      = s:showTimeLine()
 endfunction
 
