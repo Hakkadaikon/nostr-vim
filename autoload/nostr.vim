@@ -1,4 +1,4 @@
-"--------------------------------
+"-------------------------------
 " File        : nostr-vim
 " Description : 
 " Author      : hakkadaikon
@@ -16,22 +16,46 @@ function! s:getFollows() abort
     return json_decode(readfile(l:filepath))
 endfunction
 
+function! s:getBorder() abort
+    let wininfo = getwininfo(win_getid())[0]
+    let width = winwidth(0)
+    if has_key(wininfo, 'textoff')
+      let width += wininfo.textoff
+    endif
+    return repeat("─", width-6)
+endfunction
+
+function! s:createBuffer(buffer_title) abort
+    silent noautocmd split __Nostr_TL__
+    setlocal buftype=nofile bufhidden=wipe noswapfile
+    setlocal wrap nonumber signcolumn=no filetype=markdown
+    wincmd p
+    return bufwinid(a:buffer_title)
+endfunction
+
+function! s:addBuffer(list) abort
+    call win_execute(s:winid, 'setlocal modifiable', 1)
+    call win_execute(s:winid, 'normal! G', 1)
+    call win_execute(s:winid, 'call append(line("$"), a:list)', 1)
+    call win_execute(s:winid, 'setlocal nomodifiable nomodified', 1)
+endfunction
+
 function! s:jobCallback(id, data, event) abort
     let l:list = []
-    for l:timelineStr in a:data
-        let l:timelineJson = ""
+    for l:tl_str in a:data
+        let l:tl_json = ""
         try
-            let l:timelineJson = json_decode(l:timelineStr)
+            let l:tl_json = json_decode(l:tl_str)
         catch
             continue
         endtry
 
-        let l:id         = l:timelineJson["id"]
-        let l:pubkey     = l:timelineJson["pubkey"]
-        let l:created_at = l:timelineJson["created_at"]
-        let l:kind       = l:timelineJson["kind"]
-        let l:sig        = l:timelineJson["sig"]
-        let l:content    = l:timelineJson["content"]
+        let l:id         = l:tl_json["id"]
+        let l:pubkey     = l:tl_json["pubkey"]
+        let l:created_at = l:tl_json["created_at"]
+        let l:kind       = l:tl_json["kind"]
+        let l:sig        = l:tl_json["sig"]
+        let l:content    = l:tl_json["content"]
         let l:time       = strftime("%Y/%m/%d %H:%M:%S", l:created_at)
 
         " profile
@@ -73,27 +97,24 @@ function! s:jobCallback(id, data, event) abort
             for l:item in l:contents
                 call add(l:list, l:item)
             endfor
-            call add(l:list, "--------------------------------")
+
+            " draw border
+            let border = s:getBorder()
+            call add(l:list, border)
         endif
     endfor
 
-    let s:winid = bufwinid('__Nostr_TL__')
+    let s:buffer_title = '__Nostr_TL__'
+    let s:winid = bufwinid(s:buffer_title)
     if s:winid ==# -1
-      silent noautocmd split __Nostr_TL__
-      setlocal buftype=nofile bufhidden=wipe noswapfile
-      setlocal wrap nonumber signcolumn=no filetype=markdown
-      wincmd p
-      let s:winid = bufwinid('__Nostr_TL__')
+      let s:winid = s:createBuffer(s:buffer_title)
     endif
 
-    call win_execute(s:winid, 'setlocal modifiable', 1)
-    call win_execute(s:winid, 'normal! G', 1)
-    call win_execute(s:winid, 'call append(line("$"), l:list)', 1)
-    call win_execute(s:winid, 'setlocal nomodifiable nomodified', 1)
+    call s:addBuffer(l:list)
 endfunction
 
-function! s:close() abort
-    call jobstop(s:ch)
+function! s:close(ch) abort
+    call jobstop(a:ch)
     "call win_execute(s:winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", s:winid))
 endfunction
 
@@ -122,7 +143,7 @@ function! nostr#show() abort
 endfunction
 
 function! nostr#close() abort
-    call s:close()
+    call s:close(s:ch)
 endfunction
 
 function! nostr#post(str) abort
