@@ -4,7 +4,7 @@
 " Author      : hakkadaikon
 "--------------------------------
 function! s:showTimeLineAlgia() abort
-    return jobstart(['algia', 'stream'], { 'on_stdout': function('s:jobCallback') })
+    return jobstart(['algia', 'stream', '--kind', '1,7'], { 'on_stdout': function('s:jobCallback') })
 endfunction
 
 function! s:showTimeLine() abort
