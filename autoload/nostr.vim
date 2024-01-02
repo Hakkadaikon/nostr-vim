@@ -77,19 +77,6 @@ function! s:jobCallback(id, data, event) abort
                     \ )
             endtry
             let s:note[l:id] = deepcopy(l:list)
-        elseif l:kind ==# 7
-            try
-                let l:reaction_id = g:NostrEvent.getTags()[0][1]
-                let l:list =
-                    \ g:Display.addReaction(
-                        \ l:list,
-                        \ l:profile,
-                        \ g:NostrEvent.getContent(),
-                        \ s:note,
-                        \ l:reaction_id)
-            catch
-                echo printf("error reaction %s %s", l:id, l:reaction_id)
-            endtry
         elseif l:kind ==# 6
             try
                 let l:repost_id   = g:NostrEvent.getTags()[0][1]
@@ -102,6 +89,19 @@ function! s:jobCallback(id, data, event) abort
                         \ )
             catch
                 echo printf("error repost %s %s", l:id, l:repost_id)
+            endtry
+        elseif l:kind ==# 7
+            try
+                let l:reaction_id = g:NostrEvent.getTags()[0][1]
+                let l:list =
+                    \ g:Display.addReaction(
+                        \ l:list,
+                        \ l:profile,
+                        \ g:NostrEvent.getContent(),
+                        \ s:note,
+                        \ l:reaction_id)
+            catch
+                echo printf("error reaction %s %s", l:id, l:reaction_id)
             endtry
         endif
     endfor
