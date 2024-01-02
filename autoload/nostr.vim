@@ -17,7 +17,6 @@ function! s:getFollows() abort
 endfunction
 
 function! s:jobCallback(id, data, event) abort
-    let s:note = {}
     let l:list = []
     for l:tl_str in a:data
         let l:tl_json = ""
@@ -35,6 +34,7 @@ function! s:jobCallback(id, data, event) abort
         let l:display_name  = ""
         let l:time          = g:NostrEvent.getTime()
         let l:pubkey        = g:NostrEvent.getPubkey()
+        let l:id            = g:NostrEvent.getId()
 
         try
             let l:profile_json = s:follows["follows"][l:pubkey]
@@ -57,13 +57,25 @@ function! s:jobCallback(id, data, event) abort
 
         let l:kind = g:NostrEvent.getKind()
         if l:kind ==# 1
-            let l:list = g:Display.getNote(l:list, l:profile, g:NostrEvent.getContent())
-            let s:note[g:NostrEvent.getId()] = l:list
+            let l:list = g:Display.addNote(l:list, l:id, l:profile, g:NostrEvent.getContent())
+            let s:note[l:id] = deepcopy(l:list)
         elseif l:kind ==# 7
-            let l:list = g:Display.getReaction(l:list, l:profile, g:NostrEvent.getContent())
+            try
+                let l:reaction_id = g:NostrEvent.getTags()[0][1]
+                let l:list =
+                    \ g:Display.addReaction(
+                        \ l:list,
+                        \ l:profile,
+                        \ g:NostrEvent.getContent(),
+                        \ s:note,
+                        \ l:reaction_id)
+            catch
+                echo printf("error reaction %s %s", l:id, l:reaction_id)
+            endtry
         endif
     endfor
 
+    call add(l:list, g:Display.getBorder())
     let s:buffer_title = '__Nostr_TL__'
     if g:Buffer.existsBuffer() ==# 0
         call g:Buffer.createBuffer(s:buffer_title)
@@ -81,6 +93,7 @@ endfunction
 
 function! nostr#show() abort
     let s:follows = s:getFollows()
+    let s:note    = {}
     let s:ch      = s:showTimeLine()
 endfunction
 

@@ -15,7 +15,7 @@ function! g:Display.getBorder() abort
 endfunction
 
 function! g:Display.getProfile(
-    \ id,
+    \ pubkey,
     \ display_name,
     \ name,
     \ valid_profile,
@@ -29,38 +29,48 @@ function! g:Display.getProfile(
             let l:profile_line = printf("✓👤%s", l:profile_line)
         endif
     else
-        let l:profile_line = printf("[%s] ", a:id)
+        let l:profile_line = printf("[%s] ", a:pubkey)
     endif
     let l:profile_line = printf("%s %s", l:profile_line, a:time)
 
     return l:profile_line
 endfunction
 
-function! g:Display.getNote(
+function! g:Display.addNote(
     \ list,
+    \ id,
     \ profile,
     \ note
 \ ) abort
     call add(a:list, a:profile)
+    call add(a:list, printf("id : %s", a:id))
     call add(a:list, "")
 
     let l:notes = split(a:note, "\n")
     for l:item in l:notes
         call add(a:list, l:item)
     endfor
-    call add(a:list, g:Display.getBorder())
     return a:list
 endfunction
 
-function! g:Display.getReaction(
+function! g:Display.addReaction(
     \ list,
     \ profile,
-    \ reaction
+    \ reaction,
+    \ notes,
+    \ reaction_id
 \ ) abort
     call add(a:list, a:profile)
     call add(a:list, "")
     call add(a:list, a:reaction)
-    call add(a:list, g:Display.getBorder())
+
+    try
+        let l:reaction_note = a:notes[a:reaction_id]
+        for l:item in l:reaction_note
+            call add(a:list, printf("%s%s", "> ", l:item))
+        endfor
+    catch
+        call add(a:list, printf("reaction note id : %s", a:reaction_id))
+    endtry
     return a:list
 endfunction
-
