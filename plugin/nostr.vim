@@ -3,6 +3,24 @@
 " Description : 
 " Author      : hakkadaikon
 "--------------------------------
-command! -nargs=1 ShowTimeLine  call nostr#show()
-command!          PopupTimeLine call nostr#popup()
-command!          PostTimeLine  call nostr#post(<f-args>)
+command! ShowTimeLine  call nostr#show()
+command! PostTimeLine  call nostr#post(<f-args>)
+
+function! s:setColorScheme() abort
+    hi! NostrUserName   ctermfg=216 guifg=#e2a478 cterm=bold
+    hi! NostrScreenName ctermfg=150 gui=bold      cterm=bold    guifg=#b4be82
+    hi! NostrHashtag    ctermfg=110 guifg=#84a0c6
+    hi! NostrLike       ctermfg=203 ctermbg=234   guifg=#e27878 guibg=#161821
+    hi! NostrRetweeted  ctermfg=150 gui=bold      guifg=#b4be82
+    syntax match NostrScreenName /[^│]\+\s\ze| @.\+/
+    syntax match NostrHashtag    /\zs#[^ ]\+/
+    syntax match NostrUserName   /@[^ ]\+/
+    syntax match NostrLike       /test/
+    syntax match NostrRetweeted  /♻/
+endfunction
+
+augroup nostr
+    autocmd ColorScheme * call s:setColorScheme()
+augroup END
+
+call s:setColorScheme()

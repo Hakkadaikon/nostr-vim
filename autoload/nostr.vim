@@ -54,7 +54,8 @@ function! s:jobCallback(id, data, event) abort
             \ l:time
         \ )
 
-        if g:NostrEvent.getKind() ==# 1
+        let l:kind = g:NostrEvent.getKind()
+        if l:kind ==# 1
             let l:list = g:Display.getNote(l:list, l:profile, g:NostrEvent.getContent())
         endif
     endfor
