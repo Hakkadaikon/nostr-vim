@@ -36,6 +36,32 @@ function! g:Display.getProfile(
     return l:profile_line
 endfunction
 
+function! g:Display.addQuoteRepost(
+    \ list,
+    \ id,
+    \ profile,
+    \ note,
+    \ quote_notes,
+    \ quote_id
+\ ) abort
+    call add(a:list, a:profile)
+    call add(a:list, printf("id : %s", a:id))
+    call add(a:list, "")
+
+    let l:notes = split(a:note, "\n")
+    for l:item in l:notes
+        call add(a:list, l:item)
+    endfor
+
+    call add(a:list, "")
+    let l:quote_note = a:quote_notes[a:quote_id]
+    for l:item in l:quote_note
+        call add(a:list, printf("%s%s", "> ", l:item))
+    endfor
+
+    return a:list
+endfunction
+
 function! g:Display.addNote(
     \ list,
     \ id,
@@ -50,6 +76,7 @@ function! g:Display.addNote(
     for l:item in l:notes
         call add(a:list, l:item)
     endfor
+
     return a:list
 endfunction
 
@@ -63,6 +90,7 @@ function! g:Display.addReaction(
     call add(a:list, a:profile)
     call add(a:list, "")
     call add(a:list, a:reaction)
+    call add(a:list, "")
 
     try
         let l:reaction_note = a:notes[a:reaction_id]

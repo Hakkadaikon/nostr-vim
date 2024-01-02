@@ -57,7 +57,24 @@ function! s:jobCallback(id, data, event) abort
 
         let l:kind = g:NostrEvent.getKind()
         if l:kind ==# 1
-            let l:list = g:Display.addNote(l:list, l:id, l:profile, g:NostrEvent.getContent())
+            try
+                let l:quote_id = g:NostrEvent.getTags()[0][1]
+                let l:list = g:Display.addQuoteRepost(
+                    \ l:list,
+                    \ l:id,
+                    \ l:profile,
+                    \ g:NostrEvent.getContent(),
+                    \ s:note,
+                    \ l:quote_id
+                    \ )
+            catch
+                let l:list = g:Display.addNote(
+                    \ l:list,
+                    \ l:id,
+                    \ l:profile,
+                    \ g:NostrEvent.getContent()
+                    \ )
+            endtry
             let s:note[l:id] = deepcopy(l:list)
         elseif l:kind ==# 7
             try
