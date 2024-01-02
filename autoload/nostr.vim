@@ -4,7 +4,7 @@
 " Author      : hakkadaikon
 "--------------------------------
 function! s:showTimeLineAlgia() abort
-    return jobstart(['algia', 'stream', '--kind', '1,7'], { 'on_stdout': function('s:jobCallback') })
+    return jobstart(['algia', 'stream', '--kind', '1,6,7'], { 'on_stdout': function('s:jobCallback') })
 endfunction
 
 function! s:showTimeLine() abort
@@ -55,24 +55,25 @@ function! s:jobCallback(id, data, event) abort
             \ l:time
         \ )
 
-        let l:kind = g:NostrEvent.getKind()
+        let l:kind    = g:NostrEvent.getKind()
+        let l:content = g:NostrEvent.getContent()
         if l:kind ==# 1
             try
-                let l:quote_id = g:NostrEvent.getTags()[0][1]
+                let l:quote_id   = g:NostrEvent.getTags()[0][1]
+                let l:quote_note = deepcopy(s:note[l:quote_id])
                 let l:list = g:Display.addQuoteRepost(
                     \ l:list,
                     \ l:id,
                     \ l:profile,
-                    \ g:NostrEvent.getContent(),
-                    \ s:note,
-                    \ l:quote_id
+                    \ l:content,
+                    \ l:quote_note
                     \ )
             catch
                 let l:list = g:Display.addNote(
                     \ l:list,
                     \ l:id,
                     \ l:profile,
-                    \ g:NostrEvent.getContent()
+                    \ l:content
                     \ )
             endtry
             let s:note[l:id] = deepcopy(l:list)
@@ -88,6 +89,19 @@ function! s:jobCallback(id, data, event) abort
                         \ l:reaction_id)
             catch
                 echo printf("error reaction %s %s", l:id, l:reaction_id)
+            endtry
+        elseif l:kind ==# 6
+            try
+                let l:repost_id   = g:NostrEvent.getTags()[0][1]
+                let l:repost_note = deepcopy(s:note[l:repost_id])
+                let l:list =
+                    \ g:Display.addRepost(
+                        \ l:list,
+                        \ l:profile,
+                        \ l:repost_note
+                        \ )
+            catch
+                echo printf("error repost %s %s", l:id, l:repost_id)
             endtry
         endif
     endfor

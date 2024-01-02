@@ -41,8 +41,7 @@ function! g:Display.addQuoteRepost(
     \ id,
     \ profile,
     \ note,
-    \ quote_notes,
-    \ quote_id
+    \ quote_note,
 \ ) abort
     call add(a:list, a:profile)
     call add(a:list, printf("id : %s", a:id))
@@ -52,12 +51,29 @@ function! g:Display.addQuoteRepost(
     for l:item in l:notes
         call add(a:list, l:item)
     endfor
-
     call add(a:list, "")
-    let l:quote_note = a:quote_notes[a:quote_id]
-    for l:item in l:quote_note
+
+    for l:item in a:quote_note
         call add(a:list, printf("%s%s", "> ", l:item))
     endfor
+
+    return a:list
+endfunction
+
+function! g:Display.addRepost(
+    \ list,
+    \ profile,
+    \ note,
+\ ) abort
+    call add(a:list, a:profile)
+    call add(a:list, "repost")
+    call add(a:list, "")
+
+    let l:notes = split(a:note, "\n")
+    for l:item in l:notes
+        call add(a:list, l:item)
+    endfor
+    call add(a:list, "")
 
     return a:list
 endfunction
