@@ -17,6 +17,7 @@ function! s:getFollows() abort
 endfunction
 
 function! s:jobCallback(id, data, event) abort
+    let s:note = {}
     let l:list = []
     for l:tl_str in a:data
         let l:tl_json = ""
@@ -57,6 +58,9 @@ function! s:jobCallback(id, data, event) abort
         let l:kind = g:NostrEvent.getKind()
         if l:kind ==# 1
             let l:list = g:Display.getNote(l:list, l:profile, g:NostrEvent.getContent())
+            let s:note[g:NostrEvent.getId()] = l:list
+        elseif l:kind ==# 7
+            let l:list = g:Display.getReaction(l:list, l:profile, g:NostrEvent.getContent())
         endif
     endfor
 

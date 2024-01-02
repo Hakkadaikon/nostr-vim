@@ -51,3 +51,16 @@ function! g:Display.getNote(
     call add(a:list, g:Display.getBorder())
     return a:list
 endfunction
+
+function! g:Display.getReaction(
+    \ list,
+    \ profile,
+    \ reaction
+\ ) abort
+    call add(a:list, a:profile)
+    call add(a:list, "")
+    call add(a:list, a:reaction)
+    call add(a:list, g:Display.getBorder())
+    return a:list
+endfunction
+

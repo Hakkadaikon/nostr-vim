@@ -12,6 +12,10 @@ function! g:NostrEvent(tl_json) abort
     let g:NostrEvent["kind"]       = a:tl_json["kind"]
     let g:NostrEvent["sig"]        = a:tl_json["sig"]
     let g:NostrEvent["content"]    = a:tl_json["content"]
+    try
+        let g:NostrEvent["tags"] = a:tl_json["tags"]
+    catch
+    endtry
 endfunction
 
 function! g:NostrEvent.getId() abort
@@ -40,4 +44,8 @@ endfunction
 
 function! g:NostrEvent.getContent() abort
     return self.content
+endfunction
+
+function! g:NostrEvent.getTags() abort
+    return self.tags
 endfunction
