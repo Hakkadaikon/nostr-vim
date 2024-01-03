@@ -3,12 +3,34 @@
 " Description : 
 " Author      : hakkadaikon
 "--------------------------------
-function! s:showTimeLineAlgia() abort
-    return jobstart(['algia', 'stream', '--kind', '1,6,7'], { 'on_stdout': function('s:jobCallback') })
+function! nostr#open() abort
+    let s:follows = s:getFollows()
+    let s:note    = {}
+    let s:ch      = s:open()
+endfunction
+
+function! nostr#close() abort
+    call s:close(s:ch)
+endfunction
+
+function! nostr#post(str) abort
+    call s:post(a:str)
 endfunction
 
 function! s:showTimeLine() abort
-    return s:showTimeLineAlgia()
+    return s:openAlgia()
+endfunction
+
+function! s:close(ch) abort
+    call jobstop(a:ch)
+endfunction
+
+function! s:post(str) abort
+    call system('algia post ' . a:str)
+endfunction
+
+function! s:openAlgia() abort
+    return jobstart(['algia', 'stream', '--kind', '1,6,7'], { 'on_stdout': function('s:jobCallback') })
 endfunction
 
 function! s:getFollows() abort
@@ -112,26 +134,4 @@ function! s:jobCallback(id, data, event) abort
         call g:Buffer.createBuffer(s:buffer_title)
     endif
     call g:Buffer.addBuffer(l:list)
-endfunction
-
-function! s:close(ch) abort
-    call jobstop(a:ch)
-endfunction
-
-function! s:post(str) abort
-    call system('algia post ' . a:str)
-endfunction
-
-function! nostr#show() abort
-    let s:follows = s:getFollows()
-    let s:note    = {}
-    let s:ch      = s:showTimeLine()
-endfunction
-
-function! nostr#close() abort
-    call s:close(s:ch)
-endfunction
-
-function! nostr#post(str) abort
-    call s:post(a:str)
 endfunction
