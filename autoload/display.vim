@@ -63,14 +63,13 @@ endfunction
 function! g:Display.addRepost(
     \ list,
     \ profile,
-    \ note,
+    \ notes,
 \ ) abort
     call add(a:list, a:profile)
     call add(a:list, "repost")
     call add(a:list, "")
 
-    let l:notes = split(a:note, "\n")
-    for l:item in l:notes
+    for l:item in a:notes
         call add(a:list, l:item)
     endfor
     call add(a:list, "")

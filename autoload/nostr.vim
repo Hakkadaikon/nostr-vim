@@ -17,7 +17,7 @@ function! nostr#post(str) abort
     call s:post(a:str)
 endfunction
 
-function! s:showTimeLine() abort
+function! s:open() abort
     return s:openAlgia()
 endfunction
 
