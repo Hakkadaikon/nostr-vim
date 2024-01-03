@@ -3,8 +3,8 @@
 " Description : 
 " Author      : hakkadaikon
 "--------------------------------
-command! ShowTimeLine  call nostr#show()
-command! PostTimeLine  call nostr#post(<f-args>)
+command! NostrOpen     call nostr#open()
+command! NostrPost     call nostr#post(<f-args>)
 
 function! s:setColorScheme() abort
     hi! NostrUserName   ctermfg=216 guifg=#e2a478 cterm=bold
