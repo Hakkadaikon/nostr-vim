@@ -70,7 +70,7 @@ function! g:Display.addRepost(
     call add(a:list, "")
 
     for l:item in a:notes
-        call add(a:list, l:item)
+        call add(a:list, printf("%s%s", "> ", l:item))
     endfor
     call add(a:list, "")
 
