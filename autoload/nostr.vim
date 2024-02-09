@@ -1,3 +1,6 @@
+" Open the nostr stream channel.
+" Once the channel is opened, the callback set in the arguments will be called whenever an event is received from the nostr relay via websocket.
+" @param {Function} userCallback - The callback to be called when an event is received from the nostr relay.
 function! nostr#open(userCallback) abort
     let s:note    = {}
     let s:ch      = s:open()
@@ -5,10 +8,13 @@ function! nostr#open(userCallback) abort
     let s:cb      = a:userCallback
 endfunction
 
+" Close the nostr stream channel.
 function! nostr#close() abort
     call s:close(s:ch)
 endfunction
 
+" Post a message to the nostr relay.
+" @param {String} str - The message to be posted to the nostr relay.
 function! nostr#post(str) abort
     call s:post(a:str)
 endfunction
