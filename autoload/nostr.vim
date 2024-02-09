@@ -1,6 +1,9 @@
 " Open the nostr stream channel.
 " Once the channel is opened, the callback set in the arguments will be called whenever an event is received from the nostr relay via websocket.
 " @param {Function} userCallback - The callback to be called when an event is received from the nostr relay.
+" - function userCallback({Object} event, {Object} profile)
+" - event: The event received from the nostr relay.
+" - profile: The profile of the user who posted the event.
 function! nostr#open(userCallback) abort
     let s:note    = {}
     let s:ch      = s:open()
