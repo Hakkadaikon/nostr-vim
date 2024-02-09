@@ -55,6 +55,6 @@ function! s:jobCallback(id, data, event) abort
             let l:profile_json = {}
         endtry
 
-        s:cb(l:tl_json, l:profile_json)
+        call s:cb(l:tl_json, l:profile_json)
     endfor
 endfunction
