@@ -1,11 +1,23 @@
 " Open the nostr stream channel.
 " Once the channel is opened, the callback set in the arguments will be called whenever an event is received from the nostr relay via websocket.
 " @param {Function} userCallback - The callback to be called when an event is received from the nostr relay.
-" - function userCallback({Object} event, {Object} profile)
-" - event: The event received from the nostr relay.
-" - profile: The profile of the user who posted the event.
+"  - function userCallback({Object} event, {Object} profile)
+"    - event: The event received from the nostr relay.
+"      - event["id"]
+"      - event["pubkey"]
+"      - event["created_at"]
+"      - event["kind"]
+"      - event["sig"]
+"      - event["content"]
+"    - profile: The profile of the user who posted the event.
+"      - profile["website"]
+"      - profile["picture"]
+"      - profile["display_name"]
+"      - profile["name"]
+"      - profile["about"]
+"      - profile["nip05"]
+"      - profile["lud16"]
 function! nostr#open(userCallback) abort
-    let s:note    = {}
     let s:ch      = s:open()
     let s:follows = s:getFollows()
     let s:cb      = a:userCallback
@@ -41,10 +53,10 @@ endfunction
 
 function! s:jobCallback(id, data, event) abort
     let l:list = []
-    for l:tl_str in a:data
-        let l:tl_json = ""
+    for l:event_str in a:data
+        let l:event_json = ""
         try
-            let l:tl_json = json_decode(l:tl_str)
+            let l:event_json = json_decode(l:event_str)
         catch
             continue
         endtry
@@ -55,6 +67,6 @@ function! s:jobCallback(id, data, event) abort
             let l:profile_json = {}
         endtry
 
-        call s:cb(l:tl_json, l:profile_json)
+        call s:cb(l:event_json, l:profile_json)
     endfor
 endfunction
