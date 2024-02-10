@@ -62,7 +62,7 @@ function! s:jobCallback(id, data, event) abort
         endtry
 
         try
-            let l:profile_json = s:follows["follows"][l:pubkey]
+            let l:profile_json = s:follows["follows"][l:event_json["pubkey"]]
         catch
             let l:profile_json = {}
         endtry
